@@ -4,7 +4,8 @@ How hard it is to tail logs of an environment in elastic beanstalk. Now using eb
 
 ## Example
 `./eb-tail env-name`
-
+or you can specify the file name
+`./eb-tail env-name -f '/path/to/file'`
 
 ## Installation
 - Clone the repository
