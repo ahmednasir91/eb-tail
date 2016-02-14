@@ -1,9 +1,9 @@
-## Tail Elasticbeanstalk Environment
+## Tail logs of Elastic beanstalk Environment
 
 How hard it is to tail logs of an environment in elastic beanstalk. Now using eb-tail its very easy. eb-tail fetches all the instances of the environment and start tailing the file in all the instances, that makes it very handy.
 
 ## Example
-
+`./eb-tail env-name`
 
 
 ## Installation
