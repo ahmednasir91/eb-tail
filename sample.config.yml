@@ -13,8 +13,8 @@ environments:
     use_private_ip: true # Private IP should be used when inside VPC
 
     # You can specify, more evironments below and use alias to connect.
-  - alias: prod
-    name: prod-env
+  - alias: test
+    name: test-env
     files: 
       - /var/log/httpd/access_log
     user: ec2-user
