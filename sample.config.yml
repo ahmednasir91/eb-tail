@@ -1,0 +1,22 @@
+credentials:
+  aws_key: AWS_KEY
+  aws_secret: AWS_SECRET_EXAMPLE
+  aws_region: us-east-1
+
+environments:
+  - alias: prod # Alias for the environment, this will be used to refer to this env when tailing.
+    name: prod-env # Name of the Elastic Beanstalk environment
+    files: 
+      - /var/log/httpd/access_log # Log file
+    user: ec2-user # User name, for Amazon AMI, its ec-user
+    key: key.pem # Key pair download from AWS, when environment is launched
+    use_private_ip: true # Private IP should be used when inside VPC
+
+    # You can specify, more evironments below and use alias to connect.
+  - alias: prod
+    name: prod-env
+    files: 
+      - /var/log/httpd/access_log
+    user: ec2-user
+    key: key.pem
+    use_private_ip: true

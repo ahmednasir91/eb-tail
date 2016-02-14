@@ -1,0 +1,108 @@
+#!/usr/bin/env ruby
+require 'net/ssh'
+require 'aws-sdk'
+require 'pp'
+require 'colorize'
+require 'yaml'
+require 'optparse'
+require './lib/environment'
+require './lib/server'
+
+
+module EBTail
+
+	class Main
+
+		def init(args)
+			@servers = []
+			@threads = []
+			@credentials = {}
+			@environments = {}
+
+			begin
+				load_config!
+
+				environment = apply_args! args
+
+				environment.find_instances @credentials
+				puts "Found instance(s) [#{environment.instances.join(', ')}]".green
+
+				environment.tail!
+			rescue Interrupt
+  				puts "STOPPING!".red
+			rescue => err
+				puts err.message.red
+			end
+		end
+
+		def apply_args!(args)
+			files = []
+			p = OptionParser.new do |opts|
+				opts.banner = "Usage: eb-logs env-name [options]"
+
+				opts.on('-f File', '--file File', "File to tail, specify complete path.") do |f|
+					files = [f]
+				end
+
+				opts.on_tail("-h", "--help", "Show this message") do
+			        puts opts
+			        exit
+			    end
+			end
+			p.parse args
+
+			raise "Environment name not specified, you have to pass it as argument to the program." if args.length == 0
+			raise "Environment name (#{args[0]}) not found in config file." if !@environments.has_key?(args[0])
+
+			environment = @environments[args[0]]
+
+			environment.files = files if files.any?
+
+			puts "Tail '#{environment.files.join(', ')}' on '#{environment.name}'".blue
+
+			environment
+		end
+
+		def load_config!
+			@config = YAML.load_file('config.yml')
+
+			validate_config
+		end
+
+		def validate_config
+			raise "AWS credentials are missing, either add to the config.yml or environment vars." if !load_credentials!
+			puts "Finding AWS credentials ... Done!".green
+
+			raise "No Environments found in config.yml" if !load_environments!
+			puts "Found environment(s) [#{@environments.keys.join(', ')}] in config file.".green
+
+
+		end
+
+		def load_credentials!
+			@credentials[:access_key_id] = ENV['AWS_ACCESS_KEY_ID'] if ENV.has_key? 'AWS_ACCESS_KEY_ID'
+			@credentials[:secret_access_key] = ENV['AWS_SECRET_ACCESS_KEY'] if ENV.has_key? 'AWS_SECRET_ACCESS_KEY'
+			@credentials[:region] = ENV['AWS_REGION'] if ENV.has_key? 'AWS_REGION'
+
+			if @config.has_key? 'credentials'
+				@credentials[:access_key_id] = @config['credentials']['aws_key'] if @config['credentials'].has_key? 'aws_key'
+				@credentials[:secret_access_key] = @config['credentials']['aws_secret'] if @config['credentials'].has_key? 'aws_secret'
+				@credentials[:region] = @config['credentials']['aws_region'] if @config['credentials'].has_key? 'aws_region'
+			end
+
+			@credentials.length == 3
+		end
+
+		def load_environments!
+			@config['environments'].each do |env|
+				@environments[env.has_key?('alias') ? env['alias'] : env['name']] = Environment.new(env)
+			end
+
+			@environments.length > 0
+		end
+
+	end
+
+end
+
+EBTail::Main.new.init(ARGV)
