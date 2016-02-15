@@ -14,6 +14,8 @@ module EBTail
 	class Main
 
 		def init(args)
+			Aws.use_bundled_cert! # Needed for windows platform, otherwise it gives an SSL error
+			
 			@servers = []
 			@threads = []
 			@credentials = {}
