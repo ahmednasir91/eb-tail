@@ -34,8 +34,10 @@ module EBTail
 			})
 
 			resp.reservations.each do |r|
-				r.instances.each do |i| 
-					@instances << (@use_private_ip ? i.private_ip_address : i.public_ip_address)
+				r.instances.each do |i|
+					ip = (@use_private_ip ? i.private_ip_address : i.public_ip_address) 
+					puts ip
+					@instances << ip if !ip.nil?
 				end
 			end
 

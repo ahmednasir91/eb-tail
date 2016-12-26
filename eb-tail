@@ -5,15 +5,16 @@ require 'pp'
 require 'colorize'
 require 'yaml'
 require 'optparse'
-require './lib/environment'
-require './lib/server'
-
+require "#{File.dirname(__FILE__)}/lib/environment"
+require "#{File.dirname(__FILE__)}/lib/server"
 
 module EBTail
 
 	class Main
 
 		def init(args)
+			Aws.use_bundled_cert!
+			
 			@servers = []
 			@threads = []
 			@credentials = {}
@@ -30,8 +31,8 @@ module EBTail
 				environment.tail!
 			rescue Interrupt
   				puts "STOPPING!".red
-			rescue => err
-				puts err.message.red
+			# rescue => err
+			# 	puts err.message.red
 			end
 		end
 
@@ -64,7 +65,7 @@ module EBTail
 		end
 
 		def load_config!
-			@config = YAML.load_file('config.yml')
+			@config = YAML.load_file("#{File.dirname(__FILE__)}/config.yml")
 
 			validate_config
 		end
