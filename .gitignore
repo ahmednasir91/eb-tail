@@ -1,2 +1,3 @@
-config.yml
+config/config.yml
 *.lock
+*.gem
