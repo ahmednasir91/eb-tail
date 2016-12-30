@@ -1,0 +1,3 @@
+#!/usr/bin/env ruby
+require 'eb-tail'
+EBTail::Main.new.init(ARGV)

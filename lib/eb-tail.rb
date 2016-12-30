@@ -1,12 +1,11 @@
-#!/usr/bin/env ruby
 require 'net/ssh'
 require 'aws-sdk'
 require 'pp'
 require 'colorize'
 require 'yaml'
 require 'optparse'
-require "#{File.dirname(__FILE__)}/lib/environment"
-require "#{File.dirname(__FILE__)}/lib/server"
+require_relative 'eb-tail/environment'
+require_relative 'eb-tail/server'
 
 module EBTail
 
@@ -31,8 +30,8 @@ module EBTail
 				environment.tail!
 			rescue Interrupt
   				puts "STOPPING!".red
-			# rescue => err
-			# 	puts err.message.red
+			rescue => err
+				puts err.message.red
 			end
 		end
 
@@ -65,7 +64,14 @@ module EBTail
 		end
 
 		def load_config!
-			@config = YAML.load_file("#{File.dirname(__FILE__)}/config.yml")
+			config_file_path = "#{File.dirname(__FILE__)}/config/config.yml"
+			
+			if File.exists?(config_file_path)
+				puts "yes"
+				@config = YAML.load_file(config_file_path)
+			else
+				raise "Config file is missing, run 'eb-tail configure'"
+			end
 
 			validate_config
 		end
@@ -103,7 +109,4 @@ module EBTail
 		end
 
 	end
-
 end
-
-EBTail::Main.new.init(ARGV)
