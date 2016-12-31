@@ -4,6 +4,7 @@ require 'pp'
 require 'colorize'
 require 'yaml'
 require 'optparse'
+require 'ostruct'
 require_relative 'eb-tail/environment'
 require_relative 'eb-tail/server'
 
@@ -20,14 +21,21 @@ module EBTail
 			@environments = {}
 
 			begin
-				load_config!
+				options = apply_args! args
 
-				environment = apply_args! args
+				if options.do_configure
+					configure!
+				else
+					load_config!
 
-				environment.find_instances @credentials
-				puts "Found instance(s) [#{environment.instances.join(', ')}]".green
+					environment = get_environment(options.environment_name)
 
-				environment.tail!
+					environment.find_instances @credentials
+					puts "Found instance(s) [#{environment.instances.join(', ')}]".green
+
+					environment.tail!
+				end
+
 			rescue Interrupt
   				puts "STOPPING!".red
 			rescue => err
@@ -36,25 +44,39 @@ module EBTail
 		end
 
 		def apply_args!(args)
-			files = []
+			options = OpenStruct.new
+			options.files = []
+			options.do_configure = false
+
 			p = OptionParser.new do |opts|
-				opts.banner = "Usage: eb-logs env-name [options]"
+				opts.banner = "Usage: eb-tail [options] env-alias"
 
 				opts.on('-f File', '--file File', "File to tail, specify complete path.") do |f|
-					files = [f]
+					options.files = [f]
+				end
+
+				opts.on('-c', '--configure', "Configure environments") do
+					options.do_configure = true
 				end
 
 				opts.on_tail("-h", "--help", "Show this message") do
 			        puts opts
 			        exit
 			    end
+
 			end
 			p.parse args
 
-			raise "Environment name not specified, you have to pass it as argument to the program." if args.length == 0
-			raise "Environment name (#{args[0]}) not found in config file." if !@environments.has_key?(args[0])
+			options.environment_name = args[0] if args.length > 0 && @environments.has_key?(args[0])
 
-			environment = @environments[args[0]]
+			options
+		end
+
+		def get_environment(env_name)
+			raise "Environment name not specified, you have to pass it as argument to the program." if env_name.blank?
+			raise "Environment name (#{args[0]}) not found in config file." if !@environments.has_key?(env_name)
+
+			environment = @environments[env_name]
 
 			environment.files = files if files.any?
 
@@ -70,7 +92,7 @@ module EBTail
 				puts "yes"
 				@config = YAML.load_file(config_file_path)
 			else
-				raise "Config file is missing, run 'eb-tail configure'"
+				raise "Config file is missing, run 'eb-tail --configure'"
 			end
 
 			validate_config
@@ -106,6 +128,10 @@ module EBTail
 			end
 
 			@environments.length > 0
+		end
+
+		def configure!
+			raise "This is still underconstruction, for now do it manually."
 		end
 
 	end
