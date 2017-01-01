@@ -1,4 +1,5 @@
 ## Tail logs of Elastic beanstalk Environment
+[![Build Status](https://travis-ci.org/ahmednasir91/eb-tail.svg?branch=master)](https://travis-ci.org/ahmednasir91/eb-tail)
 
 How hard it is to tail logs of an environment in elastic beanstalk. Now using eb-tail its very easy. eb-tail fetches all the instances of the environment and start tailing the file in all the instances, that makes it very handy.
 
@@ -20,7 +21,7 @@ And you are done!
 
 The MIT License (MIT)
 
-Copyright (c) 2016 Ahmed Nasir
+Copyright (c) 2017 Ahmed Nasir
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
