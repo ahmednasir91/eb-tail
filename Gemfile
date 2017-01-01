@@ -5,3 +5,7 @@ gem 'net-ssh'
 gem 'net-ssh-gateway'
 gem 'colorize'
 gem 'rake'
+
+group :test do
+  gem 'minitest'
+end
